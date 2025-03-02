@@ -1,5 +1,5 @@
 import { Link } from 'react-scroll';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FaTwitter, FaDiscord, FaReact, FaNodeJs, FaGithub, FaDocker, FaCss3 } from 'react-icons/fa';
 import { SiTailwindcss, SiPostgresql, SiJavascript, SiTypescript, SiHtml5, SiMongodb, SiDiscord } from 'react-icons/si';
@@ -33,13 +33,70 @@ function LandingPage() {
         }
     ];
 
+    const [formData, setFormData] = useState({
+        name: "",
+        email: "",
+        message: "",
+    });
+
+    const webhookURL = "https://discord.com/api/webhooks/1345817746583060520/XDfTWRU2XiKQAc5stGLFdsLxELU6Gim63Sti7E-ThVjbBO5r-n86tB8uyay7UvwRkVV3";
+
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const discordMessage = {
+            embeds: [
+                {
+                    title: "📩 New Contact Form Submission",
+                    color: 3447003, // Blue color
+                    fields: [
+                        {
+                            name: "👤 Name",
+                            value: formData.name || "No Name Provided",
+                            inline: true
+                        },
+                        {
+                            name: "📧 Email",
+                            value: formData.email || "No Email Provided",
+                            inline: true
+                        },
+                        {
+                            name: "💬 Message",
+                            value: formData.message || "No Message Provided"
+                        }
+                    ],
+                    footer: {
+                        text: "Contact Form Submission"
+                    },
+                    timestamp: new Date().toISOString()
+                }
+            ]
+        };
+        try {
+            await fetch(webhookURL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(discordMessage)
+            });
+
+            alert("Message sent successfully!");
+            setFormData({ name: "", email: "", message: "" });
+        } catch (error) {
+            console.error("Error Sending Message:", error);
+            alert("Failed to send message. Please try again later.");
+        }
+    };
+
     return (
         <>
             {/* Header Section */}
             <header className="bg-gray-800 shadow-xl fixed top-0 w-full z-50">
-                <div className="container mx-auto p-4 flex items-center justify-between">
-                    <h1 className="text-white text-2xl font-bold">SirNotEthan</h1>
-                    <nav className="flex space-x-6">
+                <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+                    <h1 className="text-white text-xl sm:text-2xl font-bold">SirNotEthan</h1>
+                    <nav className="hidden sm:flex space-x-6">
                         <Link
                             to="home"
                             smooth={true}
@@ -77,18 +134,17 @@ function LandingPage() {
             </header>
 
             {/* Hero Section */}
-            <section id="home" className="flex flex-col md:flex-row-reverse items-center justify-between min-h-screen bg-gray-800 text-white p-10">
+            <section id="home" className="flex flex-col md:flex-row items-center justify-between min-h-screen bg-gray-800 text-white px-6 sm:px-10 py-20">
                 <motion.div
                     className="max-w-lg text-center md:text-left"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 1, delay: 0.2 }} // Slight delay for better sequencing
                 >
-                    <p className="text-gray-100 text-opacity-80 text-sm sm:text-base">- Introduction</p>
-                    <h1 className="font-extrabold text-3xl sm:text-4xl md:text-5xl leading-tight">
+                    <h1 className="font-extrabold text-3xl sm:text-5xl">
                         Web Developer based in The United Kingdom
                     </h1>
-                    <p className="mt-4 text-gray-300 text-lg sm:text-xl">
+                    <p className="mt-4 text-gray-300 text-lg">
                         Passionate about crafting sleek, high-performance websites with modern technologies.
                     </p>
 
@@ -125,7 +181,7 @@ function LandingPage() {
             </section>
 
             {/* Skills Section */}
-            <section id="skills" className="bg-gray-900 text-white min-h-screen py-20 px-10">
+            <section id="skills" className="bg-gray-900 text-white min-h-screen py-20 px-6 sm:px-10">
                 <motion.div
                     className="text-center mt-20 mb-30"
                     initial={{ opacity: 0, y: 50 }}
@@ -136,11 +192,11 @@ function LandingPage() {
                     <p className="text-gray-300 mt-3">Expertise in modern web development tools and frameworks</p>
                 </motion.div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-10 place-items-center">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 sm:gap-10 place-items-center">
                     {skills.map((skill, index) => (
                         <motion.div
                             key={index}
-                            className="flex flex-col w-2/4 items-center space-y-2 p-4 bg-gray-800 rounded-lg shadow-lg hover:scale-105 transition-transform"
+                            className="flex flex-col items-center space-y-2 p-4 bg-gray-800 rounded-lg shadow-lg hover:scale-105 transition-transform"
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -216,6 +272,7 @@ function LandingPage() {
                     transition={{ duration: 1 }}
                 >
                     <form
+                        onSubmit={handleSubmit}
                         action="#"
                         method="POST"
                         className="space-y-6 bg-gray-800 p-8 rounded-lg shadow-lg"
@@ -231,6 +288,8 @@ function LandingPage() {
                                     id="name"
                                     name="name"
                                     placeholder="Your Name"
+                                    value={formData.name}
+                                    onChange={handleChange}
                                     className="w-full px-4 py-2 mt-2 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                                     required
                                 />
@@ -246,6 +305,8 @@ function LandingPage() {
                                     id="email"
                                     name="email"
                                     placeholder="Your Email"
+                                    value={formData.email}
+                                    onChange={handleChange}
                                     className="w-full px-4 py-2 mt-2 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                                     required
                                 />
@@ -261,6 +322,8 @@ function LandingPage() {
                                     name="message"
                                     rows="5"
                                     placeholder="Write your message"
+                                    value={formData.message}
+                                    onChange={handleChange}
                                     className="w-full px-4 py-2 mt-2 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                                     required
                                 ></textarea>
